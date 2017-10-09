@@ -85,8 +85,5 @@ Playbook
 License
 -------
 
-LGPL
-
 Author Information
 ------------------
- aa aa
