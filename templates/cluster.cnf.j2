@@ -1,0 +1,17 @@
+#{{ ansible_managed }}
+
+[mysqld]
+wsrep_on=ON
+wsrep_provider="/usr/lib/galera/libgalera_smm.so"
+wsrep_provider_options="gcache.size={{ galera_gcache_size }}"
+wsrep_cluster_name="{{ galera_cluster_name }}"
+wsrep_sst_method=rsync
+wsrep_node_name="{{ ansible_fqdn }}"
+
+wsrep_cluster_address="gcomm://{% for host in groups['galera'] %}
+{{ hostvars[host]['galera_cluster_net'] }} {%- if not loop.last %},{% endif -%}
+{% endfor %}"
+
+wsrep_node_address="{{ galera_cluster_net }}"
+
+

@@ -1,0 +1,13 @@
+---
+
+galera_cluster_name: mycluster
+galera_bind_address: 0.0.0.0
+galera_max_connections: 100
+galera_gcache_size: "1G"
+mariadb_lv: True
+mariadb_vg_name: "vg_vroot"
+mariadb_lv_name: "lv_mysql"
+mariadb_lv_size: "10g"
+mariadb_version: "10.1"
+mariadb_datadir: "/var/lib/mysql"
+

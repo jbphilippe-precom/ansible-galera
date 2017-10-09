@@ -1,0 +1,35 @@
+---
+# Install required packages
+
+- name: install required packages
+  apt:
+    pkg: "{{ item }}"
+    state: present
+    update_cache: yes
+    cache_valid_time: 11400
+  with_items:
+    - python-mysqldb
+    - mariadb-client
+    - galera
+    - rsync
+
+- name: install galera 10.0
+  apt:
+    pkg: mariadb-galera-server
+    state: present
+    update_cache: yes
+    cache_valid_time: 11400
+  when: mariadb_version == "10.0"
+
+- name: install galera 10.1
+  apt:
+    pkg: mariadb-server
+    state: present
+    update_cache: yes
+    cache_valid_time: 11400
+  when: mariadb_version == "10.1"
+
+
+
+#- name: start mysql
+#  service: name=mysql state=started

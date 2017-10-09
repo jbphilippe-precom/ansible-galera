@@ -1,0 +1,10 @@
+---
+
+- include: galera_repository.yml
+
+- include: galera_packages.yml
+
+- include: galera_access.yml
+
+- include: galera_config.yml
+

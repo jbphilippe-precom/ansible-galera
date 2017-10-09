@@ -1,0 +1,28 @@
+---
+# Setup installation repositories
+
+- name: import repository key
+  apt_key: url=http://mirror.services.local/pubkey/ael.scs.systeme.key state=present
+
+- name: add apt repository
+  apt_repository: repo="deb [arch=amd64]  http://mirror.services.local/mariadb-{{ ansible_distribution_release }}/{{ mariadb_version }} {{ ansible_distribution_release }} main"
+    state=present update_cache=yes
+#- name: add apt repository
+#  apt_repository: repo="deb http://mirror3.layerjet.com/mariadb/repo/5.5/{{ ansible_distribution|lower() }} {{ ansible_distribution_release }} main"
+#    state=present update_cache=yes
+
+
+- name: Create MariaDB LV
+  lvol: vg={{ mariadb_vg_name }} lv={{ mariadb_lv_name }} size={{ mariadb_lv_size }}
+  when: mariadb_lv == "True"
+  tags: install
+
+- name: Create filesystem for mariadb
+  filesystem: fstype=ext4 dev=/dev/{{ mariadb_vg_name }}/{{ mariadb_lv_name }}
+  when: mariadb_lv == "True"
+  tags: install
+
+- name: Create mounpoint
+  mount: name={{ mariadb_datadir }} src=/dev/mapper/{{ mariadb_vg_name }}-{{ mariadb_lv_name }} fstype=ext4 state=mounted opts=defaults,noatime,noexec
+  when: mariadb_lv == "True"
+  tags: install

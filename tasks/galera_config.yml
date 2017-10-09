@@ -1,0 +1,63 @@
+---
+# Configure MariaDB and Galera clustering
+
+- name: Galera configuration file
+  template: src=cluster.cnf.j2 dest=/etc/mysql/conf.d/cluster.cnf owner=root group=root mode=0644
+  tags: inventory
+#  notify: restart mysql
+
+- name: MariaDB configuration file
+  template: src=my.cnf.j2 dest=/etc/mysql/my.cnf owner=root group=root mode=0644
+#  notify: restart mysql
+
+- stat: path=/etc/ansible/facts.d/galera.fact
+  register: init
+
+- name: Stop all nodes
+  service: name=mysql state=stopped
+  when: init.stat.exists == False
+
+
+#start one node with wsrep-new-cluster option
+- name: Initiate cluster (Trusty)
+  service: name=mysql state=started  args="--wsrep-new-cluster"
+  run_once: true
+  when: init.stat.exists == False and ansible_distribution_release == 'trusty'
+
+
+#start one node with wsrep-new-cluster option
+- name: Initiate cluster (Xenial)
+  shell: galera_new_cluster
+  run_once: true
+  when: init.stat.exists == False and ansible_distribution_release == 'xenial'
+
+
+- stat: path=/var/run/mysqld/mysqld.pid
+  register: pid
+
+#start the nodes that aren't started
+- name: Start the other nodes
+  service: name=mysql state=started
+  when: pid.stat.exists == False and init.stat.exists == False
+
+- name: Gather mysql facts
+  mysql_status_facts:
+  ignore_errors: true
+
+#- name: Check number of hosts in the Cluster
+#  fail:
+#    msg: "|
+#        Incorrect number of hosts in the cluster.
+#        Check galera wsrep_cluster_size."
+#  failed_when: 
+#     - mysql_status['wsrep_cluster_size'] | int  != {{ groups['galera'] | length }} | int 
+
+- name: create directory for ansible custom facts
+  file: state=directory recurse=yes path=/etc/ansible/facts.d
+  tags: inventory
+
+- name: Upload Galera facts
+  template: src=galera.j2 dest=/etc/ansible/facts.d/galera.fact owner=root group=root mode=0644
+  tags: inventory
+
+

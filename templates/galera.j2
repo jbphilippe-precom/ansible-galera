@@ -1,0 +1,4 @@
+[galera]
+{% for host in groups['galera'] %}
+    "{{ hostvars[host]['galera_cluster_net'] }}"
+{% endfor %}
